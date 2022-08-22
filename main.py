@@ -1,6 +1,6 @@
 '''
 GMVC:
-Genetic Maximum Vertex Cover problem solved by greedy algorithm
+Genetic Minimum Vertex Cover problem solved by greedy algorithm
 ==>
 Remove individuals via greedy algorithm
 
