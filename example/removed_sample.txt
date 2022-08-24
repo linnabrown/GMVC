@@ -1,0 +1,8 @@
+sampleID	degreeWhenRmv	degreeOri
+6625	1	1
+902	1	1
+1468	1	1
+4190	1	1
+5266	1	1
+5479	1	1
+5716	1	1
