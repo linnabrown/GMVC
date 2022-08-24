@@ -22,7 +22,6 @@ Params
 ----
 
 ```
-optional arguments:
   -h, --help            show this help message and exit
   --sample SAMPLE       File path of sample file
   --kinship KINSHIP     File path of kinship file
@@ -33,6 +32,7 @@ optional arguments:
                         Whether sample file has header or not. Default=True.
   --kinship_col_index KINSHIP_COL_INDEX
                         The column index of kinship values. Default=5
+  --sep SEP             Delimiter to use. Default=" "
 ```
 
 Results
