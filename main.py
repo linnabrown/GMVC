@@ -42,7 +42,12 @@ kinship_col_index=args.kinship_col_index
 
 #load all sample
 all_sample = open(sample_file).readlines() 
-all_sample = [int(l.strip()) for l in all_sample] 
+all_sample = [str(l.strip()) for l in all_sample] 
+
+dict_old2new={all_sample[i]:i for i in range(len(all_sample))}
+
+dict_new2old={i:all_sample[i] for i in range(len(all_sample))}
+
 #load kinship pairs
 if has_header:
     df = pd.read_csv(kinship_file, sep=args.sep, header=0, engine="python")
@@ -52,21 +57,26 @@ kinship_table_cols=df.columns
 sample1_col=kinship_table_cols[0]
 sample2_col=kinship_table_cols[1]
 kinship_col=kinship_table_cols[kinship_col_index-1]
-
+df[sample1_col] = df[sample1_col].astype(str)
+df[sample2_col] = df[sample2_col].astype(str)
 # the pairs and nodes that have kinship > kinship_thres
 B = df[df[kinship_col] > kinship_thres] 
 #Removed the pairs where at least one sample doesn't exist in all_sample
 B = B[(B[sample1_col].isin(all_sample)) & (B[sample2_col].isin(all_sample))]
+#convert B sample into index
 if len(B)==0:
     exit("Your all of individuals of kinship file do not exists in your sample file. Program quit.")
 #construct a graph
 G = nx.Graph()
 for index,one in B.iterrows():
-    ID1 = int(one[sample1_col])
-    ID2 = int(one[sample2_col])
+    # print(one[sample1_col])
+    ID1 = dict_old2new[one[sample1_col]]
+    ID2 = dict_old2new[one[sample2_col]]
     G.add_edge(ID1, ID2)
 G_ori = G.copy()
-Bset = list(set(B[sample1_col].to_list() + B[sample2_col].to_list()))
+Bset_ori = list(set(B[sample1_col].to_list() + B[sample2_col].to_list()))
+Bset = [dict_old2new[one] for one in Bset_ori]
+#convert the node of Bset_original into index
 initial_degree={}
 for i in range(len(Bset)):
     initial_degree[Bset[i]]=G.degree[Bset[i]]
@@ -87,18 +97,20 @@ while(max(degree_list)>0):
             index=i
     neighborsWhenRemoved.append(G.degree[maxVertex])
     neighboursInB.append(G_ori.degree[maxVertex])
-    removed_sample.append(maxVertex)
+    removed_sample.append(dict_new2old[maxVertex])
     G.remove_node(maxVertex)
     Bset = list(G.nodes)
     degree_list = [G.degree[Bset[i]] for i in range(len(Bset))]
 # Then we can just remove the sample from the all sample.
-left_sample=set(all_sample) - set(removed_sample)
+unrelated_sample=set(all_sample) - set(removed_sample)
 
-#Output
+#Output unrelated sample
 fw=open(outputFileUnrelated, 'w')
-for one in left_sample:
+for one in unrelated_sample:
     fw.write(str(one)+"\n")
 fw.close()
+
+#output deatails of removed sample
 new_df= pd.DataFrame(columns=['sampleID','degreeWhenRmv','degreeOri'])
 new_df['sampleID'] = removed_sample
 new_df['degreeWhenRmv'] = neighborsWhenRemoved
